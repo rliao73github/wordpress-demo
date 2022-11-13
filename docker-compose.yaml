@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  # database for wordpress use mysql
+  mysql_db:
+    container_name: mysql_container
+    image: mysql:5.7
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Secret123
+      MYSQL_DATABASE: my_wordpress_db
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin123
+    networks:
+      - wpsite
+
+  wordpress:
+    image: wordpress:latest
+    depends_on:
+      - mysql_db 
+    restart: always
+    ports:
+      - '8086:80'
+    volumes: ['./:/var/www/html']
+    environment:
+      WORDPRESS_DB_HOST: mysql_db:3306
+      WORDPRESS_DB_USER: admin
+      WORDPRESS_DB_PASSWORD: admin123 
+      WORDPRESS_DB_NAME: my_wordpress_db
+    networks:
+      - wpsite
+
+  phpmyadmin:
+    depends_on:
+      - mysql_db
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - '8088:80'
+    environment:
+      PMA_HOST: mysql_db
+      MYSQL_ROOT_PASSWORD: Secret123
+    networks:
+      - wpsite
+
+networks:
+  wpsite:
+volumes:
+  db_data:
